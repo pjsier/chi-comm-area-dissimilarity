@@ -56,9 +56,12 @@ comma := ,
 2010_DATA_API = $(DATA_API_BASE)/2010/sf1?get=$(subst $(space),$(comma),$(strip $(2010_VARS)))&for=block+group:*&in=state:$(STATE)+county:$(COUNTY)&key=$(CENSUS_KEY)
 2000_DATA_API = $(DATA_API_BASE)/2000/sf1?get=$(subst $(space),$(comma),$(strip $(2000_VARS)))&for=block+group:*&in=state:$(STATE)+county:$(COUNTY)&key=$(CENSUS_KEY)
 
-.PHONY: clean
+2015_GEO_URL = $(GEO_BASE)$*/BG/tl_$*_$(STATE)_bg.zip
+2010_GEO_URL = $(GEO_BASE)$*/BG/tl_$*_$(STATE)_bg.zip
 
-all: race geo
+.PHONY: clean cleanup
+
+all: race geo cleanup
 
 race: data/2015/census_race.csv data/2010/census_race.csv data/2000/census_race.csv
 
@@ -69,12 +72,26 @@ data/%/census_race.csv:
 	curl -s --get "$($*_DATA_API)" | sed $(TOCSV) > $@
 	sed -i '' "1 s/.*/$($*_COLS)/" $@
 
-data/%/block_groups.geojson:
-	mkdir -p data/$*
-	curl -s $(GEO_BASE)$*/BG/tl_$*_$(STATE)_bg.zip -o data/$*/tl_$*_$(STATE)_bg.zip
-	unzip data/$*/tl_$*_$(STATE)_bg.zip -d data/$*
-	ogr2ogr -f GeoJSON -t_srs crs:84 data/$*/block_groups.geojson data/$*/tl_$*_$(STATE)_bg.shp
-	rm data/$*/tl_*
+data/2015/block_groups.geojson: data/2015/tl_bg.zip
+	unzip $< -d data/2015
+	ogr2ogr -f GeoJSON -t_srs crs:84 $@ data/2015/tl_2015_$(STATE)_bg.shp
+
+.INTERMEDIATE: data/2015/tl_bg.zip
+data/2015/tl_bg.zip:
+	mkdir -p data/2015
+	curl -s $(GEO_BASE)2015/BG/tl_2015_$(STATE)_bg.zip -o $@
+
+data/20%0/block_groups.geojson: data/20%0/tl_bg.zip
+	unzip $< -d data/20$*0
+	ogr2ogr -f GeoJSON -t_srs crs:84 $@ data/20$*0/tl_2010_$(STATE)$(COUNTY)_bg$*0.shp
+
+.INTERMEDIATE: data/20%0/tl_bg.zip
+data/20%0/tl_bg.zip:
+	mkdir -p data/20$*0
+	curl -s $(GEO_BASE)2010/BG/20$*0/tl_2010_$(STATE)$(COUNTY)_bg$*0.zip -o $@
+
+cleanup:
+	rm -r data/2*/tl_*
 
 clean:
-	rm -r data/2000 data/2010 data/2015
+	rm -r data/2*
