@@ -59,9 +59,14 @@ comma := ,
 2015_GEO_URL = $(GEO_BASE)$*/BG/tl_$*_$(STATE)_bg.zip
 2010_GEO_URL = $(GEO_BASE)$*/BG/tl_$*_$(STATE)_bg.zip
 
-.PHONY: clean cleanup
+.PHONY: scripts clean cleanup
 
-all: race geo cleanup
+all: race geo scripts cleanup
+
+scripts:
+	python3 processors/add_geoid_col.py
+	python3 processors/intersect_comm_areas.py
+	python3 processors/join_bg_data.py
 
 race: data/2015/census_race.csv data/2010/census_race.csv data/2000/census_race.csv
 
