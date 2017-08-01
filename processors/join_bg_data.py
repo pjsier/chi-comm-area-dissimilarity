@@ -1,4 +1,5 @@
 import os
+import sys
 import pandas as pd
 
 DATA_PATH = os.path.join(
@@ -15,5 +16,4 @@ def join_census_data(census_year):
 
 
 if __name__ == '__main__':
-    for d in CENSUS_DIRS:
-        join_census_data(d)
+    join_census_data(sys.argv[1])

@@ -59,24 +59,27 @@ comma := ,
 2015_GEO_URL = $(GEO_BASE)$*/BG/tl_$*_$(STATE)_bg.zip
 2010_GEO_URL = $(GEO_BASE)$*/BG/tl_$*_$(STATE)_bg.zip
 
-.PHONY: scripts clean cleanup
+.PHONY: all clean cleanup
 
-all: race geo scripts cleanup
+all: data/2000/block_groups.geojson data/2010/block_groups.geojson data/2015/block_groups.geojson \
+	data/2000/comm_bg_race.csv data/2010/comm_bg_race.csv data/2015/comm_bg_race.csv \
+	data/2000/comm_dissim.csv data/2010/comm_dissim.csv data/2015/comm_dissim.csv \
+	cleanup
 
-scripts:
-	python3 processors/add_geoid_col.py
-	python3 processors/intersect_comm_areas.py
-	python3 processors/join_bg_data.py
-	python3 processors/calculate_index_dissim.py
+data/%/comm_dissim.csv: data/%/comm_bg_race.csv
+	python3 processors/calculate_index_dissim.py $*
 
-race: data/2015/census_race.csv data/2010/census_race.csv data/2000/census_race.csv
+data/%/comm_bg_race.csv: data/%/bg_comm.csv data/%/census_race.csv
+	python3 processors/join_bg_data.py $*
 
-geo: data/2015/block_groups.geojson data/2010/block_groups.geojson data/2000/block_groups.geojson
+data/%/bg_comm.csv: data/%/block_groups.geojson
+	python3 processors/intersect_comm_areas.py $*
 
 data/%/census_race.csv:
 	mkdir -p data/$*
 	curl -s --get "$($*_DATA_API)" | sed $(TOCSV) > $@
 	sed -i '' "1 s/.*/$($*_COLS)/" $@
+	python3 processors/add_geoid_col.py $*
 
 data/2015/block_groups.geojson: data/2015/tl_bg.zip
 	unzip $< -d data/2015

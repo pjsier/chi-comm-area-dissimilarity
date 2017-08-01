@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 import pandas as pd
 import shapely
@@ -23,5 +24,4 @@ def add_geoid_col(csv_filename):
 
 
 if __name__ == '__main__':
-    for d in CENSUS_DIRS:
-        add_geoid_col(os.path.join(DATA_PATH, d, 'census_race.csv'))
+    add_geoid_col(os.path.join(DATA_PATH, sys.argv[1], 'census_race.csv'))

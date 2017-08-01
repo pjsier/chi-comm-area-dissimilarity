@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import pandas as pd
 
@@ -64,5 +65,4 @@ def comm_dissim(census_year):
 
 
 if __name__ == '__main__':
-    for y in CENSUS_YEARS:
-        comm_dissim(y)
+    comm_dissim(sys.argv[1])
