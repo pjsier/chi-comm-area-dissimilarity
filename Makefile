@@ -67,6 +67,7 @@ scripts:
 	python3 processors/add_geoid_col.py
 	python3 processors/intersect_comm_areas.py
 	python3 processors/join_bg_data.py
+	python3 processors/calculate_index_dissim.py
 
 race: data/2015/census_race.csv data/2010/census_race.csv data/2000/census_race.csv
 
